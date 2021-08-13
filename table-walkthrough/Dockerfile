@@ -19,8 +19,6 @@
 # Manually Package Instead
 # FROM maven:3.6-jdk-8-slim AS builder
 
-# VOLUME "D:/maven-repository":/root/.m2/repository
-
 # COPY ./pom.xml /opt/pom.xml
 # COPY ./src /opt/src
 # RUN cd /opt; mvn clean install -Dmaven.test.skip
