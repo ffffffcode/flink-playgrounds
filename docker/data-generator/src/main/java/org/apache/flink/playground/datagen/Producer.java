@@ -51,7 +51,7 @@ public class Producer implements Runnable, AutoCloseable {
   public void run() {
     KafkaProducer<Long, Transaction> producer = new KafkaProducer<>(getProperties());
 
-    Throttler throttler = new Throttler(100);
+    Throttler throttler = new Throttler(1);
 
     TransactionSupplier transactions = new TransactionSupplier();
 

@@ -18,18 +18,46 @@
 
 package org.apache.flink.playgrounds.spendreport;
 
+import org.apache.flink.table.annotation.DataTypeHint;
 import org.apache.flink.table.api.EnvironmentSettings;
 import org.apache.flink.table.api.Table;
 import org.apache.flink.table.api.TableEnvironment;
-import org.apache.flink.table.api.Tumble;
 import org.apache.flink.table.expressions.TimeIntervalUnit;
+import org.apache.flink.table.functions.ScalarFunction;
 
-import static org.apache.flink.table.api.Expressions.*;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
+
+import static org.apache.flink.table.api.Expressions.$;
 
 public class SpendReport {
 
     public static Table report(Table transactions) {
-        throw new UnimplementedException();
+        /*return transactions.select(
+                $("account_id"),
+                $("transaction_time").floor(TimeIntervalUnit.HOUR).as("log_ts"),
+                call(MyFloor.class, $("transaction_time")).as("mylog_ts"),
+                $("amount"))
+                .groupBy($("account_id"), $("log_ts"))
+                .select(
+                        $("account_id"),
+                        $("log_ts"),
+                        $("amount").sum().as("amount"));*/
+//        return transactions.window(Tumble.over(lit(1).hour()).on($("transaction_time")).as("log_ts"))
+//                .groupBy($("account_id"), $("log_ts"))
+//                .select(
+//                        $("account_id"),
+//                        $("log_ts"),
+//                        $("amount").sum().as("amount"));
+        return transactions.select(
+                $("account_id"),
+                $("transaction_time").floor(TimeIntervalUnit.HOUR).as("log_ts"),
+                $("amount"))
+                .groupBy($("account_id"), $("log_ts"))
+                .select(
+                        $("account_id"),
+                        $("log_ts"),
+                        $("amount").sum().as("amount"));
     }
 
     public static void main(String[] args) throws Exception {
@@ -64,5 +92,13 @@ public class SpendReport {
 
         Table transactions = tEnv.from("transactions");
         report(transactions).executeInsert("spend_report");
+    }
+
+
+    private static class MyFloor extends ScalarFunction {
+        public @DataTypeHint("TIMESTAMP(3)")
+        LocalDateTime eval(@DataTypeHint("TIMESTAMP(3)") LocalDateTime timestamp) {
+            return timestamp.truncatedTo(ChronoUnit.HOURS);
+        }
     }
 }
